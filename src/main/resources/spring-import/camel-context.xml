@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- ~ Copyright (C) Red Hat, Inc. ~ http://www.redhat.com ~ ~ Licensed under 
+	the Apache License, Version 2.0 (the "License"); ~ you may not use this file 
+	except in compliance with the License. ~ You may obtain a copy of the License 
+	at ~ ~ http://www.apache.org/licenses/LICENSE-2.0 ~ ~ Unless required by 
+	applicable law or agreed to in writing, software ~ distributed under the 
+	License is distributed on an "AS IS" BASIS, ~ WITHOUT WARRANTIES OR CONDITIONS 
+	OF ANY KIND, either express or implied. ~ See the License for the specific 
+	language governing permissions and ~ limitations under the License. -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:camel="http://camel.apache.org/schema/spring" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:cxf="http://camel.apache.org/schema/cxf" xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:osgi="http://www.springframework.org/schema/osgi" xmlns:osgix="http://www.springframework.org/schema/osgi-compendium"
+	xmlns:amq="http://activemq.apache.org/schema/core"
+	xsi:schemaLocation="
+						http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans.xsd 
+						http://camel.apache.org/schema/spring 
+						http://camel.apache.org/schema/spring/camel-spring.xsd
+						http://camel.apache.org/schema/cxf 
+						http://camel.apache.org/schema/cxf/camel-cxf.xsd
+    					http://cxf.apache.org/jaxrs 
+    					http://cxf.apache.org/schemas/jaxrs.xsd
+    					http://camel.apache.org/schema/spring 
+    					http://camel.apache.org/schema/spring/camel-spring.xsd
+    					http://www.springframework.org/schema/osgi-compendium 
+    					http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd
+    													
+    					http://www.springframework.org/schema/osgi 
+    					http://www.springframework.org/schema/osgi/spring-osgi.xsd
+    					http://www.springframework.org/schema/context 
+    					http://www.springframework.org/schema/context/spring-context.xsd
+    					http://www.springframework.org/schema/beans
+    					http://www.springframework.org/schema/beans/spring-beans.xsd
+    				   ">
+<bean id="forced" class="java.lang.IllegalArgumentException">
+   <constructor-arg index="0" value="This is forced"/>
+</bean>
+
+	<camel:camelContext id="ECCOComprobante"
+		trace="true" xmlns="http://camel.apache.org/schema/spring">
+
+		<camel:propertyPlaceholder id="camelProperties"	location="ref:properties" />
+
+
+
+
+   		<dataFormats>
+			<xmljson id="xmljson" />
+			<xmljson id="xmljsonWithOptions" forceTopLevelObject="true"
+				trimSpaces="true" rootName="srv-ecco-comprobante" elementName="comprobante"
+				skipNamespaces="true" removeNamespacePrefixes="true"
+				expandableProperties="d e" />
+		</dataFormats>
+
+
+		<camel:onException>
+			<camel:exception>java.lang.Exception</camel:exception>
+			<camel:exception>java.lang.IllegalArgumentException</camel:exception>
+			<camel:exception>java.sql.SQLException</camel:exception>
+			<camel:to uri="mock:error" />
+			<camel:process ref="errorProcessor" />
+		</camel:onException>
+
+<!-- PUNTO DE ENTRADA -->
+		<camel:route id="procesarTareaECCO">
+			<camel:from
+		    	uri="cxfrs:bean?resourceClasses=ar.com.ecco.esb.service.Comprobante&amp;bindingStyle=SimpleConsumer&amp;address={{http.address.path.ecco}}/api/comprobantes" />
+		    	
+		    <camel:to uri="log:before?showHeaders=true" />
+		    
+			<camel:process ref="defaultProcessor" />
+			<camel:setHeader headerName="headerRouting">
+				<camel:simple>direct:${header.operationName}</camel:simple>
+			</camel:setHeader>
+			<camel:routingSlip>
+				<camel:header>headerRouting</camel:header>
+			</camel:routingSlip>
+			
+			<camel:process ref="defaultProcessor" />
+			
+			<camel:choice>
+				<camel:when>
+					<camel:simple>${in.header.content-type} == 'application/xml; charset=UTF-8'</camel:simple>
+					<camel:to uri="direct:ConvertirXML" />
+				</camel:when>
+			</camel:choice>
+			
+			<camel:process ref="defaultProcessor" />
+		</camel:route>
+
+
+<!-- URL Nro.1                                                            -->
+		<camel:route id="eccoComprobantes">
+			<camel:from uri="direct:eccoComprobantes" />
+						
+			<camel:process ref="solECCOComprobantesCount" />
+			<camel:to uri="eccoCrmSql:${header.CamelSqlQuery}" />
+			<camel:process ref="recuperoCantidadRegistros" />
+		
+			<camel:process ref="solECCOComprobantes" />
+			<camel:to uri="eccoCrmSql:${header.CamelSqlQuery}" />
+			<camel:process ref="rtaECCOComprobantes" />
+ 			<camel:marshal>
+				<camel:json library="Jackson" unmarshalTypeName="java.util.Map" />
+			</camel:marshal>
+		</camel:route>
+<!--                                                                      -->
+
+
+<!-- URL Nro.2                                                            -->
+		<camel:route id="eccoComprobantesHistorico">
+			<camel:from uri="direct:eccoComprobantesHistorico" />
+			
+			<camel:process ref="solECCOComprobanteHistoricoCount" />
+			<camel:to uri="eccoCrmSql:${header.CamelSqlQuery}" />
+			<camel:process ref="recuperoCantidadRegistros" />
+		
+			<camel:process ref="solECCOComprobantesHistorico" />
+			<camel:to uri="eccoCrmSql:${header.CamelSqlQuery}" />
+			<camel:process ref="rtaECCOComprobantesHistorico" />
+			<camel:marshal>
+				<camel:json library="Jackson" unmarshalTypeName="java.util.Map" />
+			</camel:marshal>
+		</camel:route>
+<!--                                                                      -->
+
+
+<!-- URL Nro.3                                                            -->
+		<camel:route id="eccoPorComprobante">
+			<camel:from uri="direct:eccoPorComprobante" />
+			<camel:process ref="solECCOporComprobante" />
+			<camel:to uri="eccoCrmSql:${header.CamelSqlQuery}" />
+			<camel:process ref="rtaECCOporComprobante" />
+			<camel:log loggingLevel="DEBUG" message="sale de la RTA" />
+			<camel:marshal>
+				<camel:json library="Jackson" unmarshalTypeName="java.util.Map" />
+			</camel:marshal>
+			<camel:log loggingLevel="DEBUG" message="sale del JSON" />
+		</camel:route>
+<!--                                                                      -->
+
+
+<!-- URL Nro.4                                                            -->
+		<camel:route id="eccoPorComprobanteHistorico">
+			<camel:from uri="direct:eccoPorComprobanteHistorico" />
+			<camel:process ref="solECCOporComprobanteHistorico" />
+			<camel:to uri="eccoCrmSql:${header.CamelSqlQuery}" />
+			<camel:process ref="rtaECCOporComprobanteHistorico" />
+			<camel:marshal>
+				<camel:json library="Jackson" unmarshalTypeName="java.util.Map" />
+			</camel:marshal>
+		</camel:route>
+<!--                                                                      -->  
+
+
+ 	<camel:route id="ConvertirXML">
+		<camel:from uri="direct:ConvertirXML" />
+		<camel:unmarshal ref="xmljsonWithOptions" />
+	</camel:route> 
+
+
+	<camel:route id="ConvertirJSON">
+		<camel:from uri="direct:ConvertirJSON" />
+		<camel:marshal ref="xmljson"/>
+	</camel:route>
+	
+	<camel:route id="InicializaVarBRMS">
+		<camel:from uri="direct:InicializaVarBRMS" />
+		<camel:setHeader headerName="BRMSCodigo">
+			<camel:simple></camel:simple>
+		</camel:setHeader>
+		<camel:setHeader headerName="BRMSDescripcion">
+			<camel:simple></camel:simple>
+		</camel:setHeader>
+		<camel:setHeader headerName="BRMSIdProcesoValidar">
+			<camel:simple></camel:simple>
+		</camel:setHeader>
+	</camel:route>
+
+
+	</camel:camelContext>
+	<!-- *************************************************************** -->
+</beans>

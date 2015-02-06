@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:camel="http://camel.apache.org/schema/spring" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:cxf="http://camel.apache.org/schema/cxf" xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:osgi="http://www.springframework.org/schema/osgi" xmlns:osgix="http://www.springframework.org/schema/osgi-compendium"
+	xsi:schemaLocation="
+						http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd 
+						http://camel.apache.org/schema/spring 
+						http://camel.apache.org/schema/spring/camel-spring.xsd
+						http://camel.apache.org/schema/cxf 
+						http://camel.apache.org/schema/cxf/camel-cxf.xsd
+    					http://cxf.apache.org/jaxrs 
+    					http://cxf.apache.org/schemas/jaxrs.xsd
+       					http://www.springframework.org/schema/osgi-compendium 
+    					http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd
+    					http://www.springframework.org/schema/osgi 
+    					http://www.springframework.org/schema/osgi/spring-osgi.xsd
+    					http://www.springframework.org/schema/context 
+    					http://www.springframework.org/schema/context/spring-context.xsd
+    				   ">
+
+<!-- 	<osgix:cm-properties id="propertiesODBC" persistent-id="com.smg.esb.service" /> -->
+	<osgix:cm-properties id="properties" persistent-id="ar.com.ecco.esb.service" />
+
+<!-- ////IMPORTANTE - CONFIGURACION///////////////////////////////////////////////////////////////////	--> 
+<!-- Se debe agregar en el archivo [ ]ar.com.smg.esb.service.cfg ] las siguientes varaibles de entorno  -->
+<!-- - http.address.path.GISServicio=http://192.168.45.166:9292/ws.gis      							-->
+<!-- - url.GISServicio=jetty:http://192.168.104.43:8080/SRVUC-ProxyGIS/valida 							-->
+<!-- /////////////////////////////////////////////////////////////////////////////////////////////////	-->
+ 
+
+	<import resource="../../spring-import/beans-context.xml" />
+	<import resource="../../spring-import/camel-context.xml" />
+
+
+</beans>

@@ -1,0 +1,38 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1423165025637
+Build-Jdk: 1.7.0_51
+Built-By: GuArenas
+Bundle-Description: POM padre de todo proyecto Java SMMP. Provee configu
+ raciones comunes generales.
+Bundle-DocURL: http://redhat.com
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+Bundle-ManifestVersion: 2
+Bundle-Name: svc-ecco-comprobante
+Bundle-SymbolicName: ar.com.ecco.esb.svc-ecco-comprobante
+Bundle-Vendor: Red Hat
+Bundle-Version: 1.0.0.SNAPSHOT
+Created-By: Apache Maven Bundle Plugin
+Export-Package: ar.com.ecco.esb.procesos.brms;uses:="org.apache.camel";v
+ ersion="1.0.0.SNAPSHOT",ar.com.ecco.esb.procesos.declaraciones;version=
+ "1.0.0.SNAPSHOT",ar.com.ecco.esb.procesos.error;uses:="javax.ws.rs,org.
+ apache.camel,javax.ws.rs.core";version="1.0.0.SNAPSHOT",ar.com.ecco.esb
+ .procesos.primitiva;uses:="org.apache.camel,org.apache.log4j,ar.com.ecc
+ o.esb.procesos.declaraciones,org.json.simple.parser,org.json.simple,org
+ .apache.cxf.jaxrs.utils,javax.ws.rs.core";version="1.0.0.SNAPSHOT",ar.c
+ om.ecco.esb.procesos.respuesta;uses:="org.apache.camel,ar.com.ecco.esb.
+ procesos.declaraciones";version="1.0.0.SNAPSHOT",ar.com.ecco.esb.proces
+ os.solicitud;uses:="javax.ws.rs,org.apache.log4j,org.apache.camel,ar.co
+ m.ecco.esb.procesos.declaraciones,ar.com.ecco.esb.procesos.primitiva";v
+ ersion="1.0.0.SNAPSHOT",ar.com.ecco.esb.service;uses:="javax.ws.rs,org.
+ apache.camel";version="1.0.0.SNAPSHOT"
+Import-Package: com.microsoft.sqlserver.jdbc.datasource;resolution:=opti
+ onal,javax.ws.rs;version="[2.0,3)",javax.ws.rs.core;version="[2.0,3)",o
+ rg.apache.camel;version="[2.12,3)",org.apache.camel.component.sql;resol
+ ution:=optional;version="[2.12,3)",org.apache.camel.spring.spi;resoluti
+ on:=optional;version="[2.12,3)",org.apache.cxf.jaxrs.utils;version="[2.
+ 7,3)",org.apache.cxf.rs.security.cors;resolution:=optional;version="[2.
+ 7,3)",org.apache.log4j;resolution:=optional;version="[1.2,2)",org.codeh
+ aus.jackson.jaxrs;resolution:=optional;version="[1.9,2)",org.json.simpl
+ e;resolution:=optional,org.json.simple.parser,org.springframework.jdbc.
+ datasource;resolution:=optional;version="[3.0,4)"
+Tool: Bnd-1.50.0
